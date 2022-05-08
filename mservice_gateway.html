@@ -1,0 +1,110 @@
+<!-- saved from url=(0065)https://cdn.mservice.com.vn/app/html/payment/MomoGatePayment.html -->
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+        <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0" />
+        <title>M_Service Gateway</title>
+
+        <style>
+            #main {
+                margin-top: 203px;
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                width: 100%;
+            }
+            .momo {
+                width: 64px;
+                height: 64px;
+            }
+
+            #waitingText {
+                height: 44px;
+                margin: 16px 100px 100px;
+                font-family: SFProText;
+                font-size: 16px;
+                font-weight: bold;
+                font-stretch: normal;
+                font-style: normal;
+                line-height: 1.38;
+                letter-spacing: normal;
+                text-align: center;
+                color: var(--black-17);
+            }
+        </style>
+        <script
+            type="text/javascript"
+            charset="utf-8"
+            async=""
+            crossorigin="anonymous"
+            src="./M_Service Gateway_files/1.597f4104d311c33d4189.songbird.js"
+        ></script>
+    </head>
+
+    <body>
+        <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+        <script src="./M_Service Gateway_files/songbird.js"></script>
+        <script>
+            function postMessage(event, param) {
+                let response = {
+                    event,
+                    param,
+                };
+                window.ReactNativeWebView.postMessage(JSON.stringify(response));
+            }
+            function print(body) {
+                // document.getElementById("log").innerHTML += '<h1>' + body + '</h1>';
+            }
+            function parsePaymentCode(param) {
+                let { decodedResponseData, responseJWT } = param || {};
+                let { ErrorNumber, ErrorDescription } = decodedResponseData || {};
+                let errorCode = ErrorNumber;
+                let errorDesc = ErrorDescription || '';
+                let response = { errorCode, errorDesc };
+                switch (ErrorNumber) {
+                    case 0:
+                        errorCode = 0;
+                        break;
+                    default:
+                        errorCode = ErrorNumber;
+                        break;
+                }
+                postMessage('PAYMENT', response);
+            }
+            Cardinal.configure({
+                timeout: 6000,
+                extendedtimeout: 4000,
+                maxRequestRetries: 1,
+                button: {
+                    containerId: 'Cardinal-Payments',
+                },
+                logging: {
+                    level: 'on',
+                },
+            });
+            Cardinal.on('payments.setupComplete', function(setupCompleteData) {
+                postMessage('SETUP_COMPLETE', setupCompleteData);
+                print(JSON.stringify(setupCompleteData));
+            });
+            Cardinal.on('payments.validated', function(decodedResponseData, responseJWT) {
+                postMessage('PRINT_LOG', { decodedResponseData, responseJWT });
+                parsePaymentCode({ decodedResponseData, responseJWT });
+            });
+        </script>
+
+        <div id="main">
+            <img src="https://img.mservice.com.vn/app/img/bank/logo.png" class="momo" />
+            <!-- <h1 id="waitingText">MoMo đang thực hiện yêu cầu của bạn, hãy chờ chút nha!</h1>  -->
+            <lottie-player
+                src="https://img.mservice.com.vn/app/json/lottie/loading.json"
+                background="transparent"
+                speed="1"
+                style="width: 50px; height: 50px;"
+                loop
+                autoplay
+            ></lottie-player>
+        </div>
+    </body>
+</html>
